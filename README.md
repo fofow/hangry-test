@@ -59,7 +59,7 @@ In `stock.warehouse.orderpoint` there is a field called **trigger**:
 - **Snakeviz** results:
   - High call counts (40k–80k) in `fields.__get__`, `api.get`, `models.ensure_one`, `models.__iter__`.
   - `stock_orderpoint.py:<lambda>` and `stock_orderpoint.is_parent_path_in` consume significant cumulative time.
-    ![Odoo Snakeviz](image/odoo-snakeviz.png)
+    ![Odoo Snakeviz](image/snakeviz-profiling.png)
 - This shows heavy **per-record ORM iteration**.
 
 #### SQL Analysis
