@@ -80,3 +80,57 @@ FROM stock_move
 WHERE state IN ('confirmed','waiting','assigned')
   AND product_id = %s
   AND location_id IN (...);
+
+
+
+## 3. Propose and Implement a Solution
+
+### 3.1. Design Goals
+- **Improve performance** of the Replenishment view on large datasets.
+- **Preserve functionality**: results of replenishment must remain correct.
+- **Low risk**: focus on safe optimizations (indexes, cleanup strategy).
+- **Configurable**: changes can be toggled or rolled back.
+
+---
+
+### 3.2. Proposed Solutions
+1. **Database Indexes (Quick Wins)**  
+   Add indexes to speed up frequent queries on `stock_quant` and `stock_move`:
+   - `stock_quant(product_id, company_id, location_id)`
+   - `stock_move(product_id, state, location_id)`
+   - `stock_move(product_id, state, location_dest_id)`
+
+2. **Skip cleanup on view open**  
+   The method `_unlink_processed_orderpoints` runs every time the Replenishment view opens.  
+   → I skip this during view load and move cleanup to a **scheduled cron job**.  
+   → This avoids unnecessary traversal of a large dataset.
+
+### 3.3. Implementation
+
+I created a new module called `hangry_stock_warehouse_orderpoint` that implements the proposed solutions. can see in the repo
+- install the module `hangry_stock_warehouse_orderpoint`
+- open replenishment view
+
+
+## 4. Test Your Solution
+
+### 4.1. Methodology
+- Dataset: same database `hangry` with ~40k products, ~40k orderpoints, ~1k stock moves.
+- Test action: `env['stock.warehouse.orderpoint'].action_open_orderpoints()`
+- Measurement tool: Python timer with `time.perf_counter()` inside `odoo shell`.
+
+#### Before install module `hangry_stock_warehouse_orderpoint`
+![Before](image/measure-time-before.png)
+
+
+#### After install module `hangry_stock_warehouse_orderpoint`
+![After](image/measure-time-after.png)
+
+###  Potential Side Effects / Limitations
+
+- Cron cleanup timing:
+Processed orderpoints are only cleaned by scheduled cron (default hourly), not immediately at view open.
+→ This may leave "stale" processed orderpoints visible for a short period, but does not affect correctness.
+
+- Index maintenance cost:
+New indexes slightly increase write overhead (INSERT/UPDATE/DELETE on stock_move and stock_quant), but this is negligible compared to the read performance gain on large datasets.
