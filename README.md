@@ -81,7 +81,7 @@ WHERE state IN ('confirmed','waiting','assigned')
   AND product_id = %s
   AND location_id IN (...);
 
-
+```
 
 ## 3. Propose and Implement a Solution
 
