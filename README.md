@@ -54,12 +54,12 @@ In `stock.warehouse.orderpoint` there is a field called **trigger**:
 - **Flamegraph** shows call stack:
   - `action_open_orderpoints` → `_get_orderpoint_action` → `_unlink_processed_orderpoints`
   - `_compute_field_value` → `determine` → **`_compute_qty_to_order`**
-    ![Flamegraph 1](attachments/odoo-profiling.png)
+    ![Odoo Profiling](image/odoo-profiling.png)
 
 - **Snakeviz** results:
   - High call counts (40k–80k) in `fields.__get__`, `api.get`, `models.ensure_one`, `models.__iter__`.
   - `stock_orderpoint.py:<lambda>` and `stock_orderpoint.is_parent_path_in` consume significant cumulative time.
-    ![Flamegraph 2](attachments/odoo-snakeviz.png)
+    ![Odoo Snakeviz](image/odoo-snakeviz.png)
 - This shows heavy **per-record ORM iteration**.
 
 #### SQL Analysis
