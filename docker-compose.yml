@@ -1,0 +1,30 @@
+services:
+  hangry:
+    container_name: hangry
+    image: odoo:18.0
+    environment:
+      - ODOO_SERVER=odoo-bin
+      - TZ=Asia/Jakarta
+      - ODOO_DEV=all
+      
+    ports:
+      - "8069:8069"
+      
+    command: ["odoo", "--dev=all",  "--gevent-port=8072", "-c", "/etc/odoo/odoo.conf"]
+    volumes:
+      - hangry-data:/var/lib/odoo
+      - /home/popow/Documents/Naska-project/hangry_addons:/mnt/hangry_addons
+      - /home/popow/Documents/odoo/enterprise/master_odoo_enterprise/odoo-18.0+e.20250727/odoo:/usr/lib/python3/dist-packages/odoo
+      - /home/popow/Documents/odoo/compose/hangry/config:/etc/odoo
+      - /home/popow/Documents/odoo/compose/filestore:/var/lib/odoo/filestore
+      - /home/popow/Documents/odoo/compose/hangry/server_addons:/mnt/server_addons
+    networks:
+      - odoo_shared_network
+
+
+volumes:
+  hangry-data:
+
+networks:
+  odoo_shared_network:
+    external: true
